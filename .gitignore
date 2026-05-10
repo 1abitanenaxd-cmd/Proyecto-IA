@@ -1,0 +1,5 @@
+__pycache__/
+audios_sistema/
+archivos_creados/
+*.mp3
+.env

@@ -4,57 +4,50 @@ from datetime import datetime
 
 class UtilsManager:
     """
-    Herramientas de limpieza, seguridad y organización para la librería IA.
+    Herramientas de limpieza, seguridad, organización y control de IA.
     """
     def __init__(self):
         pass
 
-    # 1. LIMPIEZA DE DATOS Y EXPRESIONES REGULARES (REGEX)
+    # 1. LIMPIEZA DE DATOS Y PRIVACIDAD
     def anonimizar_texto(self, texto):
-        """
-        Usa Regex para esconder datos sensibles antes de mandarlos a la IA.
-        """
         if not isinstance(texto, str):
             return texto
             
-        # Ocultar correos electrónicos
         texto_limpio = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '[CORREO OCULTO]', texto)
-        
-        # Ocultar números de teléfono o carnets (ej. 8 dígitos seguidos)
         texto_limpio = re.sub(r'\b\d{7,10}\b', '[NUMERO OCULTO]', texto_limpio)
-        
         return texto_limpio
 
     def extraer_texto_relevante(self, texto_ia):
-        """
-        A veces la IA responde con basura extra como ```json ... ```. 
-        Esto limpia la respuesta para sacar solo lo útil.
-        """
         texto_limpio = texto_ia.replace("```json", "").replace("```", "").strip()
         return texto_limpio
 
-    # 2. GESTIÓN DE ARCHIVOS (NOMBRES ÚNICOS)
+    # 2. GESTIÓN DE ARCHIVOS (Evita que se borren los mp3)
     def generar_nombre_unico(self, prefijo="archivo", extension=".txt"):
-        """
-        Genera un nombre que NUNCA se va a repetir usando fecha, hora y un hash.
-        Ideal para que audio.py no sobreescriba sus mp3.
-        """
-        # Saca la fecha y hora exacta (ej: 20260511_103015)
         ahora = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        # Crea un hash aleatorio cortito
         hash_random = hashlib.md5(str(datetime.now().microsecond).encode()).hexdigest()[:6]
-        
-        # Resultado: audio_20260511_103015_a1b2c3.mp3
         return f"{prefijo}_{ahora}_{hash_random}{extension}"
 
-    # 3. VALIDACIÓN DE ARCHIVOS
+    # 3. SEGURIDAD DE ARCHIVOS
     def es_archivo_seguro(self, nombre_archivo):
-        """
-        Una doble validación de seguridad por si acaso.
-        """
         extensiones_prohibidas = ['.exe', '.bat', '.cmd', '.sh']
         for ext in extensiones_prohibidas:
             if nombre_archivo.lower().endswith(ext):
                 return False
         return True
+
+    # 4. TRADUCCIÓN
+    def preparar_prompt_traduccion(self, texto, idioma_destino):
+        texto_limpio = self.anonimizar_texto(texto)
+        prompt = f"Traduce el siguiente texto al {idioma_destino}. Solo devuelve la traducción, nada más:\n\n{texto_limpio}"
+        return prompt
+
+    # 5. INGENIERÍA DE PROMPTS (¡LA NUEVA HERRAMIENTA QUE AGREGASTE!)
+    def preparar_prompt_estricto(self, texto_usuario):
+        instruccion_oculta = (
+            "Instrucción estricta: Responde de forma extremadamente concreta, "
+            "directa y concisa. No des saludos, no te despidas, y no des "
+            "explicaciones innecesarias. Ve directo a la respuesta útil.\n\n"
+        )
+        prompt_final = instruccion_oculta + "Consulta del usuario: " + texto_usuario
+        return prompt_final
